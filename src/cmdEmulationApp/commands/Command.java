@@ -1,29 +1,25 @@
 package cmdEmulationApp.commands;
 
-import java.util.regex.*;
-
 public class Command {
-	private String command;
+	private String inputCommand;
 	private String commandType;
+	private String commandOption;
 
-	public Command(String command) {
-		this.command = command;
-		this.commandType = setCommandType(command);
+	public Command(String inputCommand, String commandType, String commandOption) {
+		this.inputCommand = inputCommand;
+		this.commandType = commandType;
+		this.commandOption = commandOption;
 	}
 
-	private String setCommandType(String command) {	
-		Pattern pat = Pattern.compile("[^ ]+");
-		Matcher mat = pat.matcher(command);
-		mat.find();
-
-		return mat.group();
-	}
-
-	String getCommand() {
-		return this.command;
+	public String getCommand() {
+		return this.inputCommand;
 	}
 
 	public String getCommandType() {
 		return this.commandType;
+	}
+
+	public String getCommandOption() {
+		return this.commandOption ;
 	}
 }

@@ -1,7 +1,13 @@
 package cmdEmulationApp;
 
 import java.util.Scanner;
-import cmdEmulationApp.commands.Command;
+import cmdEmulationApp.commands.*;
+
+import java.util.HashMap;
+import java.util.NoSuchElementException;
+import cmdEmulationApp.exceptions.UnvalidCommandException;
+import cmdEmulationApp.utils.Parser;
+import cmdEmulationApp.utils.Validator;
 
 
 public class Core {
@@ -16,8 +22,28 @@ public class Core {
 
 		while(coreTrigger) {
 			System.out.print("\u001B[32;1m" + "user@DESKTOP-GU0OIRP" + "\u001B[0m" + ":" + "\u001B[34;1m" + "~" + "\u001B[0m" + "$ ");
-			Command inputCommand = new Command(scan.nextLine().toLowerCase());
-			commandHandler(inputCommand.getCommandType());
+			
+			try {
+				String inputCommand = scan.nextLine().trim();
+
+				if (inputCommand.equals("")) {
+					continue;
+				}
+
+				Validator.commandValidator(inputCommand);
+				HashMap<String, String> commandStructure = Parser.commandQualifier(inputCommand);
+				commandHandler(
+					inputCommand,
+					commandStructure.get("commandType"),
+					commandStructure.get("commandOption"),
+					commandStructure.get("commandProperties")
+				);
+			} catch (NoSuchElementException error) {
+				this.stopCore();
+			} catch (UnvalidCommandException error) {
+				System.out.println(error);
+			}
+			
 		}
 	}
 
@@ -26,7 +52,7 @@ public class Core {
 		System.out.println("To finish, enter \"exit\"");
 	}
 
-	private void commandHandler(String commandType) {
+	private void commandHandler(String inputCommand, String commandType, String commandOption, String commandProperties) {
 		switch (commandType) {
 			case "help":
 				System.out.println("help");
@@ -36,10 +62,12 @@ public class Core {
 				stopCore();
 				break;
 			case "ls":
-				System.out.println("ls");
+				CommandLs ls = new CommandLs(inputCommand, commandType, commandOption, commandProperties);
+				ls.commandExecutor();
 				break;
 			case "cat":
-				System.out.println("cat");
+				CommandCat cat = new CommandCat(commandType, inputCommand);
+				cat.commandExecutor();
 				break;
 			default:
 				System.out.printf("%s: command not found\n", commandType);
@@ -55,6 +83,7 @@ public class Core {
 
 	private boolean stopCore() {
 		coreTrigger = false;
+		System.out.print("\n");
 		scan.close();
 
 		return coreTrigger;
