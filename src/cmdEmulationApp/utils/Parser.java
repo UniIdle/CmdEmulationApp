@@ -34,5 +34,12 @@ public class Parser {
 		return commandStructure;
 	}
 
-	
+	public static boolean catCommandModeParser(String commandProperties) {
+		Pattern pat = Pattern.compile("([^ >]+ +)*>( +[^ >]+)*");
+		Matcher mat = pat.matcher(commandProperties);
+
+		if (mat.matches()) return true;
+
+		return false;
+	}
 }

@@ -15,8 +15,14 @@ public class CommandLs extends Command {
 
 	public void commandExecutor() {
 		try {
-			Validator.optionValidator(super.getCommandType(), super.getCommandOption(), LS_COMMAND_OPTIONS_LIST);
+			Validator.optionValidator(
+				super.getCommandType(),
+				super.getCommandOption(),
+				LS_COMMAND_OPTIONS_LIST
+			);
+
 			this.commandPathHandler();
+			
 		}  catch (InvalidOptionException error) {
 			System.out.println(error);
 		}

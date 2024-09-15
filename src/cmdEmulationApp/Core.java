@@ -12,7 +12,7 @@ import cmdEmulationApp.utils.Validator;
 
 public class Core {
 	private boolean coreTrigger;
-	private Scanner scan = new Scanner(System.in);
+	private Scanner scanner = new Scanner(System.in);
 	
 
 	void launchCore() {
@@ -24,7 +24,7 @@ public class Core {
 			System.out.print("\u001B[32;1m" + "user@DESKTOP-GU0OIRP" + "\u001B[0m" + ":" + "\u001B[34;1m" + "~" + "\u001B[0m" + "$ ");
 			
 			try {
-				String inputCommand = scan.nextLine().trim();
+				String inputCommand = scanner.nextLine().trim();
 
 				if (inputCommand.equals("")) {
 					continue;
@@ -55,8 +55,8 @@ public class Core {
 	private void commandHandler(String inputCommand, String commandType, String commandOption, String commandProperties) {
 		switch (commandType) {
 			case "help":
-				System.out.println("help");
-				helpInformation();
+			CommandHelp help = new CommandHelp(inputCommand, commandType, commandOption, commandProperties);
+			help.commandExecutor();
 				break;
 			case "exit":
 				stopCore();
@@ -66,7 +66,7 @@ public class Core {
 				ls.commandExecutor();
 				break;
 			case "cat":
-				CommandCat cat = new CommandCat(commandType, inputCommand);
+				CommandCat cat = new CommandCat(inputCommand, commandType, commandOption, commandProperties);
 				cat.commandExecutor();
 				break;
 			default:
@@ -84,7 +84,7 @@ public class Core {
 	private boolean stopCore() {
 		coreTrigger = false;
 		System.out.print("\n");
-		scan.close();
+		scanner.close();
 
 		return coreTrigger;
 	}
