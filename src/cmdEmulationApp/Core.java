@@ -75,12 +75,6 @@ public class Core {
 		}
 	}
 
-	private void helpInformation() {
-
-		System.out.println("Access comands:");
-		System.out.println("ls - this command show all files and directories");
-	}
-
 	private boolean stopCore() {
 		coreTrigger = false;
 		System.out.print("\n");
