@@ -1,8 +1,11 @@
 package cmdEmulationApp;
 
+/**
+Класс - точкf входа в приложение
+ */
 public class App {
 	public static void main(String[] args) {
-		Core core = new Core();
-		core.launchCore();
+		LinuxCommandLine core = new LinuxCommandLine();
+		core.launchCommandLine();
 	}
 }

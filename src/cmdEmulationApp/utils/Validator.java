@@ -1,31 +1,29 @@
 package cmdEmulationApp.utils;
 
-import java.util.regex.*;
-import java.util.Arrays;
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
 import cmdEmulationApp.exceptions.InvalidOptionException;
 import cmdEmulationApp.exceptions.UnvalidCommandException;
-import cmdEmulationApp.exceptions.CommandNotFoundException;
 
+/**
+ * Класс содержащий в себе методы для валидации
+ */
 public class Validator {
-	public static void commandValidator(String inputCommand) throws UnvalidCommandException {
-		String commandTypeRegEx = "[\\w]+ *";
-		String commandOptionRegEx = "(-[\\w])? *";
 
-		Pattern pat = Pattern.compile(commandTypeRegEx + commandOptionRegEx + "([^ ]* *)*");
-		Matcher mat = pat.matcher(inputCommand);
-
-		if (!mat.matches()) {
-			throw new UnvalidCommandException(inputCommand);
-		}
-	}
-
-	public static void optionValidator(String commandType, String commandOption, String[] validOptions) throws InvalidOptionException {
+	/**
+	 * Метод для проверки опций, применяемых для введенной команды
+	 * @param commandType тип введеной команды
+	 * @param commandOption необязательная опция расширяющая возможности команды
+	 * @param validOptions список опций поддерживаемых в команде
+	 * @throws InvalidOptionException
+	 */
+	public static void validateCommandOptions(String commandType, String commandOption, String[] validOptions) throws InvalidOptionException {
 
 		if (commandOption.equals("")) {
 			return;
 		}
 
-		String commandOptionRegEx = "(-[" + String.join("", validOptions) + "])";
+		String commandOptionRegEx = "(-[" + String.join("", validOptions) + "]?)";
 
 		Pattern pat = Pattern.compile(commandOptionRegEx);
 		Matcher mat = pat.matcher(commandOption);
@@ -35,7 +33,13 @@ public class Validator {
 		}
 	}
 
-	public static void catinateModeValidator(String commandType, String commandProperties) throws UnvalidCommandException{
+	/**
+	 * Метод для валидации catinate мода команды "cat"
+	 * @param commandType тип введеной команды
+	 * @param commandProperties дополнительные свойства индивидуальные для каждого типа команды
+	 * @throws UnvalidCommandException исключение "выбрасываемое" при некорректно введеной последовательности инструкции данного мода
+	 */
+	public static void validateCatCommandCatinateMode(String commandType, String commandProperties) throws UnvalidCommandException{
 		Pattern pat = Pattern.compile("([^ ]+ +)*>( +[^ ]+)+");
 		Matcher mat = pat.matcher(commandProperties);
 
@@ -44,7 +48,12 @@ public class Validator {
 		}
 	}
 
-	static public boolean pathValidator(String commandPath) {
+	/**
+	 * Метод для проверки является ли введенная строка указателем на директорию
+	 * @param commandPath строка указывающая путь к директории или файлу
+	 * @return булевы значения true - директория, false - файл
+	 */
+	static public boolean validatePath(String commandPath) {
 		String osFileSeparator = System.getProperty("os.name").equals("Linux") ? "/" : "\\\\";
 		String osPrefix = System.getProperty("os.name").equals("Linux") ? "" : "[\\w]\\:";
 
@@ -52,12 +61,6 @@ public class Validator {
 		Matcher mat = pat.matcher(commandPath);
 
 		return mat.matches();
-	}
-
-	static public void helpCommandValidator(String commandProperty, String[] accessCommandsList) throws CommandNotFoundException {
-		if (!Arrays.asList(accessCommandsList).contains(commandProperty)) {
-			throw new CommandNotFoundException(commandProperty);
-		}
 	}
 	
 }

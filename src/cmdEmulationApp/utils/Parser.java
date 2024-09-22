@@ -2,11 +2,19 @@ package cmdEmulationApp.utils;
 
 import java.util.HashMap;
 import java.util.Arrays;
-import java.util.regex.*;
-import cmdEmulationApp.exceptions.UnvalidCommandException;
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
 
+/**
+ * Класс, содрежащий в себе методы для извлечения необходимой информации из получаемых строк
+ */
 public class Parser {
-	public static HashMap<String, String> commandQualifier(String inputCommand) throws UnvalidCommandException {
+	/**
+	 * Метод для получения полной информации из команды введеной пользователем
+	 * @param inputCommand команда введеная пользователем
+	 * @return связанный список с полями, маркерующими информацю из введеной команды
+	 */
+	public static HashMap<String, String> parseInputedCommand(String inputCommand) {
 		String[] commandAsList = inputCommand.split(" +");
 		HashMap<String, String> commandStructure = new HashMap<String, String>();
 
@@ -20,7 +28,7 @@ public class Parser {
 
 		String commandOption = commandAsList[1];
 
-		Pattern pat = Pattern.compile("-[\\w]");
+		Pattern pat = Pattern.compile("-[\\w]?");
 		Matcher mat = pat.matcher(commandOption);
 
 		if (mat.matches()) {
@@ -34,7 +42,12 @@ public class Parser {
 		return commandStructure;
 	}
 
-	public static boolean catCommandModeParser(String commandProperties) {
+	/**
+	 * Метод определяющий режим работы "cat" команды
+	 * @param commandProperties дополнительные свойства команды
+	 * @return булевы значения true - catinate режим, false - show режим
+	 */
+	public static boolean parseCatCommandMode(String commandProperties) {
 		Pattern pat = Pattern.compile("([^ >]+ +)*>( +[^ >]+)*");
 		Matcher mat = pat.matcher(commandProperties);
 

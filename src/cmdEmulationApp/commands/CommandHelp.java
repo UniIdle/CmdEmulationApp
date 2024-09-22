@@ -1,46 +1,47 @@
 package cmdEmulationApp.commands;
 
-import cmdEmulationApp.exceptions.CommandNotFoundException;
+import java.util.HashMap;
+import cmdEmulationApp.abstracts.AbstractCommand;
+import cmdEmulationApp.exceptions.InvalidOptionException;
 import cmdEmulationApp.utils.Validator;
 
-public class CommandHelp extends Command {
-	String commandProperty;
-	private final String[] ACCESS_COMMANDS_FOR_INFORMATION_LIST = {"cat", "ls"};
+/**
+ * Класс реализующий функционал команды "help"
+ */
+public class CommandHelp extends AbstractCommand {
+	private HashMap<String, AbstractCommand> MapOfCommandObjects;
+	private final String[] HELP_COMMAND_OPTIONS_LIST = {" "};
 
-	public CommandHelp(String inputCommand, String commandType, String commandOption, String commandProperties) {
-		super(inputCommand, commandType, commandOption);
-		this.commandProperty = commandProperty == null ? "" : commandProperty;
+	public CommandHelp(HashMap<String, AbstractCommand> MapOfObjects) {
+		this.MapOfCommandObjects = MapOfObjects;
 	}
 
-	public void commandExecutor() {
+	public void executeCommand() {
 		try {
-			Validator.helpCommandValidator(
-				this.commandProperty,
-				ACCESS_COMMANDS_FOR_INFORMATION_LIST
+			Validator.validateCommandOptions(
+				super.getCommandType(),
+				super.getCommandOption(),
+				HELP_COMMAND_OPTIONS_LIST
 			);
 
-			this.commandHandler();
+			if (super.getCommandProperties().equals("")) {
+				this.showHelpInformation();
+			} else {
+				this.MapOfCommandObjects.get(super.getCommandProperties()).showHelpInformation();
+			}
 			
-		}  catch (CommandNotFoundException error) {
+		} catch (NullPointerException error) {
+			System.out.printf("bash: help: no help topic match `%s'.%n", super.getCommandType());
+		} catch (InvalidOptionException error) {
 			System.out.println(error);
 		}
 	}
 
-	private void commandHandler() {
-		switch (this.commandProperty) {
-			case "cat":
-				this.showCatHelpInformation();
-				break;
-			case "ls":
-				this.showLsHelpInformation();
-			break;
-			default:
-				this.showAllHelpInformation();
-				break;
-		}
+	public void processCommandOption() {
+
 	}
 
-	private void showAllHelpInformation() {
+	public void showHelpInformation() {
 		System.out.println("GNU bash, version 5.1.16(1)-release (x86_64-pc-linux-gnu)");
 		System.out.println("These shell commands are defined internally.  Type `help' to see this list.");
 		System.out.println("Type `help name' to find out more about the function `name'.");
@@ -49,28 +50,6 @@ public class CommandHelp extends Command {
 		System.out.println();
 		System.out.println("ls [-aQr] [args...]");
 		System.out.println("cat [-bEn] [args...] [-] [>] [args...]");
-	}
-
-	private void showCatHelpInformation() {
-		System.out.println("cat: cat [-bEn] [args...] [-] [>] [args...]");
-		System.out.println("\tCat, which is short for concatenate, is one of the most commonly used commands in Linux and other Unix-like operating systems.");
-		System.out.println("\tThe cat command allows us to create single or multiple files, view file inclusions, concatenate files and redirect output in a terminal or file.");
-		System.out.println("\tIn this article, we will show you some handy uses of the cat command and examples of it in Linux.");
-		System.out.println();
-		System.out.println("\tOptions:");
-		System.out.println("\t\t-b\t\tnumbers non-empty lines");
-		System.out.println("\t\t-E\t\tadds $ sign to the end of the line");
-		System.out.println("\t\t-n\t\tnumbers all lines");
-	}
-
-	private void showLsHelpInformation() {
-		System.out.println("ls: ls [-aQr] [args...]");
-		System.out.println("\tThe ls command lists the files in your current directory (ls is short for \"list\"). Try it now by typing ls, then hitting <enter>.");
-		System.out.println();
-		System.out.println("\tOptions:");
-		System.out.println("\t\t-a\t\tshow hidden files");
-		System.out.println("\t\t-Q\t\tputs file and directories names in quotes");
-		System.out.println("\t\t-r\t\tshow files in reverse order");
 	}
 
 }

@@ -1,53 +1,43 @@
 package cmdEmulationApp.commands;
 
 import java.io.File;
-import cmdEmulationApp.exceptions.*;
+import cmdEmulationApp.exceptions.InvalidOptionException;
 import cmdEmulationApp.utils.Validator;
+import cmdEmulationApp.abstracts.AbstractCommand;
 
-public class CommandLs extends Command {
+/**
+ * Класс реализующий функционал команды "ls"
+ */
+public class CommandLs extends AbstractCommand {
 	final private String[] LS_COMMAND_OPTIONS_LIST = {"a", "Q", "r"};
-	private String commandPath;
 
-	public CommandLs(String inputCommand, String commandType, String commandOption, String commandProperties) {
-		super(inputCommand, commandType, commandOption);
-		this.commandPath = commandProperties.equals("") ? System.getProperty("user.dir") : commandProperties;
+	public void setCommandProperties(String commandProperties) {
+		if (commandProperties.equals("")) {
+			super.setCommandProperties(System.getProperty("user.dir"));
+		} else {
+			super.setCommandProperties(commandProperties);
+		}
 	}
 
-	public void commandExecutor() {
+	public void executeCommand() {
 		try {
-			Validator.optionValidator(
+			Validator.validateCommandOptions(
 				super.getCommandType(),
 				super.getCommandOption(),
 				LS_COMMAND_OPTIONS_LIST
 			);
 
-			this.commandPathHandler();
+			this.processCommandProperties();
 			
 		}  catch (InvalidOptionException error) {
 			System.out.println(error);
 		}
 	}
 
-	private void commandPathHandler() {
-		String[] pathesList = this.commandPath.split(" +");
-
-		for (String path : pathesList) {
-			try {
-				File folder = new File(path);
-				File[] files = folder.listFiles();
-	
-				if (pathesList.length > 1 && files != null) System.out.println(path + ":");
-				this.optionHandler(files);
-				if (pathesList.length > 1 && files != null) System.out.println();
-
-			} catch (NullPointerException error) {
-				System.out.println(this.getCommandType() + ": cannot access '" + path + "': No such file or directory");
-			}
-		}
-
+	public void processCommandOption() {
 	}
 
-	private void optionHandler(File[] currentDirectoryFiles) {
+	private void processCommandOption(File[] currentDirectoryFiles) {
 
 		switch (super.getCommandOption()) {
 			case "-a":
@@ -99,6 +89,38 @@ public class CommandLs extends Command {
 				}
 				System.out.print("\n");
 				break;
+		}
+
+	}
+
+	public void showHelpInformation() {
+		System.out.println("ls: ls [-aQr] [args...]");
+		System.out.println("\tThe ls command lists the files in your current directory (ls is short for \"list\"). Try it now by typing ls, then hitting <enter>.");
+		System.out.println();
+		System.out.println("\tOptions:");
+		System.out.println("\t\t-a\t\tshow hidden files");
+		System.out.println("\t\t-Q\t\tputs file and directories names in quotes");
+		System.out.println("\t\t-r\t\tshow files in reverse order");
+	}
+
+	/**
+	 * Метод выполняющий обработку дополнительных свойств команды
+	 */
+	private void processCommandProperties() {
+		String[] pathesList = super.getCommandProperties().split(" +");
+
+		for (String path : pathesList) {
+			try {
+				File folder = new File(path);
+				File[] files = folder.listFiles();
+	
+				if (pathesList.length > 1 && files != null) System.out.println(path + ":");
+				this.processCommandOption(files);
+				if (pathesList.length > 1 && files != null) System.out.println();
+
+			} catch (NullPointerException error) {
+				System.out.println(this.getCommandType() + ": cannot access '" + path + "': No such file or directory");
+			}
 		}
 	}
 

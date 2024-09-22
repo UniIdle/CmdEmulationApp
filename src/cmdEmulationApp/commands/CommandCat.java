@@ -5,25 +5,31 @@ import java.io.FileWriter;
 import java.io.BufferedWriter;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import cmdEmulationApp.exceptions.*;
-import cmdEmulationApp.utils.Parser;
-import cmdEmulationApp.utils.Validator;
 import java.util.Scanner;
 import java.util.NoSuchElementException;
+import cmdEmulationApp.abstracts.AbstractCommand;
+import cmdEmulationApp.exceptions.InvalidOptionException;
+import cmdEmulationApp.exceptions.UnvalidCommandException;
+import cmdEmulationApp.utils.Parser;
+import cmdEmulationApp.utils.Validator;
 
-public class CommandCat extends Command {
+/**
+ * Класс реализующий функционал команды "cat"
+ */
+public class CommandCat extends AbstractCommand {
 	final private String[] CAT_COMMAND_OPTIONS_LIST = {"b", "E", "n"};
-	private String commandProperties;
 	private boolean catinateMode = false;
 	private int counterOfLine = 1;
 	private StringBuilder catinateModeBuffer = new StringBuilder("");
 	private String currentDirectory = System.getProperty("user.dir");
 	private File[] currentDirectoryFiles = this.getCurrentDirectoryFiles();
 
-
-	public CommandCat(String inputCommand, String commandType, String commandOption, String commandProperties) {
-		super(inputCommand, commandType, commandOption);
-		this.commandProperties = commandProperties.equals("") ? "-" : commandProperties;
+	public void setCommandProperties(String commandProperties) {
+		if (commandProperties.equals("")) {
+			super.setCommandProperties("-");
+		} else {
+			super.setCommandProperties(commandProperties);
+		}
 	}
 
 	private File[] getCurrentDirectoryFiles() {
@@ -33,92 +39,41 @@ public class CommandCat extends Command {
 		return files;
 	}
 
-	public void commandExecutor() {
-		this.catinateMode = Parser.catCommandModeParser(commandProperties);
+	public void executeCommand() {
+		this.catinateMode = Parser.parseCatCommandMode(super.getCommandProperties());
 
 		try {
 			if (this.catinateMode) {
-				Validator.catinateModeValidator(
+				Validator.validateCatCommandCatinateMode(
 					super.getCommandType(),
-					this.commandProperties
+					super.getCommandProperties()
 				);
-				this.commandCatinateModeHandler();
+				this.processCommandCatinateMode();
 
 			} else {
-				Validator.optionValidator(
+				Validator.validateCommandOptions(
 					super.getCommandType(),
 					super.getCommandOption(),
 					CAT_COMMAND_OPTIONS_LIST
 				);
 
-				this.commandShowModeHandler();
+				this.processCommandShowMode();
 			}
 
-		}  catch (InvalidOptionException error) {
+		} catch (InvalidOptionException error) {
 			System.out.println(error);
 		} catch (UnvalidCommandException error) {
 			System.out.println(error);
 		}
+
+		this.catinateMode = false;
+		this.counterOfLine = 1;
 	}
 
-	private void commandShowModeHandler() {
-		String[] ListOfCommandProperties = this.commandProperties.split(" +");
-
-		for (String property : ListOfCommandProperties) {
-			if (property.equals("-")) {
-				this.inputOutputMode();
-				continue;
-			}
-
-			try {
-				Scanner scanner = new Scanner(new File(property));
-
-				while (scanner.hasNextLine()) {
-					this.optionHandler(scanner.nextLine());
-				}
-
-				scanner.close();
-
-			} catch (FileNotFoundException error) {
-				System.out.println(this.getCommandType() + ": " + property + ": No such file or directory");
-			}
-		}
-
+	public void processCommandOption() {
 	}
 
-	private void commandCatinateModeHandler() {
-		String[] ListOfCommandProperties = this.commandProperties.split(" +");
-		boolean isRecordMode = false;
-
-		for (int i = 0; i < ListOfCommandProperties.length; i++) {
-			String element = ListOfCommandProperties[i];
-
-			if (isRecordMode) {
-				this.fileRecorder(element);
-
-			} else {
-				if (element.equals(">")) {
-					isRecordMode = true;
-
-					if (i == 0) {
-						this.inputOutputMode();
-					}
-
-					continue;
-				}
-
-				if (element.equals("-")) {
-					this.inputOutputMode();
-					continue;
-				}
-
-				this.fileReader(element);
-			}
-		}
-
-	}
-
-	private void optionHandler(String outputString) {
+	private void processCommandOption(String outputString) {
 		switch (super.getCommandOption()) {
 			case "-b":
 				if (!outputString.equals("")) {
@@ -128,7 +83,6 @@ public class CommandCat extends Command {
 				}
 				break;
 			case "-E":
-
 				System.out.println(outputString + "$");
 				break;
 			case "-n":
@@ -140,13 +94,90 @@ public class CommandCat extends Command {
 		}
 	}
 
-	private void inputOutputMode() {
+	public void showHelpInformation() {
+		System.out.println("cat: cat [-bEn] [args...] [-] [>] [args...]");
+		System.out.println("\tCat, which is short for concatenate, is one of the most commonly used commands in Linux and other Unix-like operating systems.");
+		System.out.println("\tThe cat command allows us to create single or multiple files, view file inclusions, concatenate files and redirect output in a terminal or file.");
+		System.out.println("\tIn this article, we will show you some handy uses of the cat command and examples of it in Linux.");
+		System.out.println();
+		System.out.println("\tOptions:");
+		System.out.println("\t\t-b\t\tnumbers non-empty lines");
+		System.out.println("\t\t-E\t\tadds $ sign to the end of the line");
+		System.out.println("\t\t-n\t\tnumbers all lines");
+	}
+
+	/**
+	 * Метод реализующий обработку в режиме отображения
+	 */
+	private void processCommandShowMode() {
+		String[] ListOfCommandProperties = super.getCommandProperties().split(" +");
+
+		for (String property : ListOfCommandProperties) {
+			if (property.equals("-")) {
+				this.launchInputOutputMode();
+				continue;
+			}
+
+			try {
+				Scanner scanner = new Scanner(new File(property));
+
+				while (scanner.hasNextLine()) {
+					this.processCommandOption(scanner.nextLine());
+				}
+
+				scanner.close();
+
+			} catch (FileNotFoundException error) {
+				System.out.println(this.getCommandType() + ": " + property + ": No such file or directory");
+			}
+		}
+	}
+
+	/**
+	 * Метод реализующий обработку в режиме катенации
+	 */
+	private void processCommandCatinateMode() {
+		String[] ListOfCommandProperties = super.getCommandProperties().split(" +");
+		boolean isRecordMode = false;
+
+		for (int i = 0; i < ListOfCommandProperties.length; i++) {
+			String element = ListOfCommandProperties[i];
+
+			if (isRecordMode) {
+				this.recordFile(element);
+
+			} else {
+				if (element.equals(">")) {
+					isRecordMode = true;
+
+					if (i == 0) {
+						this.launchInputOutputMode();
+					}
+
+					continue;
+				}
+
+				if (element.equals("-")) {
+					this.launchInputOutputMode();
+					continue;
+				}
+
+				this.readFile(element);
+			}
+		}
+
+	}
+
+	/**
+	 * Метод для запуска интерактивного режима ввода-вывода последовательностей от пользователя
+	 */
+	private void launchInputOutputMode() {
 		Scanner scanner = new Scanner(System.in);
 
 		try {
 			while (true) {
 				String inputString = scanner.nextLine();
-				this.optionHandler(inputString);
+				this.processCommandOption(inputString);
 
 				if (this.catinateMode) {
 					this.catinateModeBuffer.append(inputString + "\n");
@@ -155,8 +186,8 @@ public class CommandCat extends Command {
 		} catch (NoSuchElementException error) {}
 	}
 
-	private void fileReader(String filePath) {
-		filePath = this.fileNameHandler(filePath);
+	private void readFile(String filePath) {
+		filePath = this.processFileName(filePath);
 
 		try {
 			Scanner scanner = new Scanner(new File(filePath));
@@ -167,13 +198,12 @@ public class CommandCat extends Command {
 		} catch (FileNotFoundException e) {
 
 		}
-		
 	}
 
-	private void fileRecorder(String filePath) {
-		this.fileCreator(filePath);
+	private void recordFile(String filePath) {
+		this.createNewFile(filePath);
 
-		if (!Validator.pathValidator(filePath)) {
+		if (!Validator.validatePath(filePath)) {
 			filePath = this.currentDirectory + System.getProperty("file.separator") + filePath;
 		}
 
@@ -188,19 +218,9 @@ public class CommandCat extends Command {
 		}
 	}
 
-	private String fileNameHandler(String fileName) {
-		for (File file : this.currentDirectoryFiles) {
-			if (file.getName().equals(fileName)) {
-				return fileName = this.currentDirectory + System.getProperty("file.separator") + fileName;
-			}
-		}
-
-		return fileName;
-	}
-
-	private void fileCreator(String fileName) {
+	private void createNewFile(String fileName) {
 		try {
-			if (Validator.pathValidator(fileName)) {
+			if (Validator.validatePath(fileName)) {
 				File file = new File(fileName);
 				file.createNewFile();
 			} else {
@@ -210,6 +230,21 @@ public class CommandCat extends Command {
 		} catch (IOException error) {
 			System.out.println(super.getCommandType() + ": error creating file by name: " + fileName);
 		}
+	}
+
+	/**
+	 * Метод проверяющий наличие файла в текущей директории
+	 * @param fileName имя файла
+	 * @return полученную строку или полный путь к файлу, если указанный файл существует в директории
+	 */
+	private String processFileName(String fileName) {
+		for (File file : this.currentDirectoryFiles) {
+			if (file.getName().equals(fileName)) {
+				return fileName = this.currentDirectory + System.getProperty("file.separator") + fileName;
+			}
+		}
+
+		return fileName;
 	}
 
 }
