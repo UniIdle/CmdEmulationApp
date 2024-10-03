@@ -1,9 +1,10 @@
 package cmdEmulationApp.utils;
 
-import java.util.HashMap;
-import java.util.Arrays;
-import java.util.regex.Pattern;
-import java.util.regex.Matcher;
+// import java.util.HashMap;
+import java.util.ArrayList;
+// import java.util.regex.Pattern;
+// import java.util.regex.Matcher;
+import cmdEmulationApp.models.CommandDataObject;
 
 /**
  * Класс, содрежащий в себе методы для извлечения необходимой информации из получаемых строк
@@ -14,32 +15,26 @@ public class Parser {
 	 * @param inputCommand команда введеная пользователем
 	 * @return связанный список с полями, маркерующими информацю из введеной команды
 	 */
-	public static HashMap<String, String> parseInputedCommand(String inputCommand) {
+	public static CommandDataObject parseInputedCommand(String inputCommand) {
 		String[] commandAsList = inputCommand.split(" +");
-		HashMap<String, String> commandStructure = new HashMap<String, String>();
+		CommandDataObject commandData = new CommandDataObject();
 
-		commandStructure.put("commandType", commandAsList[0]);
-		commandStructure.put("commandOption", "");
-		commandStructure.put("commandProperties", "");
+		commandData.setCommandType(commandAsList[0]);
 
-		if (commandAsList.length == 1) {
-			return commandStructure;
+		if (commandAsList.length < 2) {
+			return commandData;
 		}
 
-		String commandOption = commandAsList[1];
-
-		Pattern pat = Pattern.compile("-[\\w]?");
-		Matcher mat = pat.matcher(commandOption);
-
-		if (mat.matches()) {
-			commandStructure.put("commandOption", commandOption);
-			commandStructure.put("commandProperties", String.join(" ", Arrays.copyOfRange(commandAsList, 2, commandAsList.length)));
-		} else {
-			commandStructure.put("commandOption", "");
-			commandStructure.put("commandProperties", String.join(" ", Arrays.copyOfRange(commandAsList, 1, commandAsList.length)));
+		for (int i = 1; i < commandAsList.length; i++) {
+			String element = commandAsList[i];
+			if (element.startsWith("-")) {
+				commandData.setCommandOptions(element);
+			} else {
+				commandData.setCommandArgs(element);
+			}
 		}
 
-		return commandStructure;
+		return commandData;
 	}
 
 	/**
@@ -47,11 +42,11 @@ public class Parser {
 	 * @param commandProperties дополнительные свойства команды
 	 * @return булевы значения true - catinate режим, false - show режим
 	 */
-	public static boolean parseCatCommandMode(String commandProperties) {
-		Pattern pat = Pattern.compile("([^ >]+ +)*>( +[^ >]+)*");
-		Matcher mat = pat.matcher(commandProperties);
+	public static boolean parseCatCommandMode(ArrayList<String> commandProperties) {
+		// Pattern pat = Pattern.compile("([^ >]+ +)*>( +[^ >]+)*");
+		// Matcher mat = pat.matcher(commandProperties);
 
-		if (mat.matches()) return true;
+		// if (mat.matches()) return true;
 
 		return false;
 	}

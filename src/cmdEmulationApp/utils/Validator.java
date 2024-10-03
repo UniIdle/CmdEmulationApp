@@ -1,8 +1,9 @@
 package cmdEmulationApp.utils;
 
 import java.util.regex.Pattern;
+// import java.util.ArrayList;
 import java.util.regex.Matcher;
-import cmdEmulationApp.exceptions.InvalidOptionException;
+// import cmdEmulationApp.exceptions.InvalidOptionException;
 import cmdEmulationApp.exceptions.UnvalidCommandException;
 
 /**
@@ -17,21 +18,21 @@ public class Validator {
 	 * @param validOptions список опций поддерживаемых в команде
 	 * @throws InvalidOptionException
 	 */
-	public static void validateCommandOptions(String commandType, String commandOption, String[] validOptions) throws InvalidOptionException {
+	// public static void validateCommandOptions(String commandType, ArrayList<String> commandOptions, String[] validOptions) throws InvalidOptionException {
 
-		if (commandOption.equals("")) {
-			return;
-		}
+	// 	if (commandOptions.equals("")) {
+	// 		return;
+	// 	}
 
-		String commandOptionRegEx = "(-[" + String.join("", validOptions) + "]?)";
+	// 	String commandOptionRegEx = "(-[" + String.join("", validOptions) + "]?)";
 
-		Pattern pat = Pattern.compile(commandOptionRegEx);
-		Matcher mat = pat.matcher(commandOption);
+	// 	Pattern pat = Pattern.compile(commandOptionRegEx);
+	// 	Matcher mat = pat.matcher(commandOptions);
 
-		if (!mat.matches()) {
-			throw new InvalidOptionException(commandType, commandOption);
-		}
-	}
+	// 	if (!mat.matches()) {
+	// 		throw new InvalidOptionException(commandType, commandOption);
+	// 	}
+	// }
 
 	/**
 	 * Метод для валидации catinate мода команды "cat"

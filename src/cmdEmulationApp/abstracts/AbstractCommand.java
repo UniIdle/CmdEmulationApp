@@ -1,35 +1,40 @@
 package cmdEmulationApp.abstracts;
 
+import java.util.List;
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
+import cmdEmulationApp.exceptions.InvalidOptionException;
+
 /**
  * Абстрактный класс команды, определяющий основные поля объекта команды и методы доступа к ним
  */
 public abstract class AbstractCommand implements Command {
+	public String[] supportedOptions;
 
-	private String commandType;
-	private String commandOption;
-	private String commandProperties;
+	// @Override
+	// public void executeCommand(String commandType, ArrayList<String> commandOptions, ArrayList<String> commandArgs) {
+	// 	try {
+	// 		validateCommandOptions(commandType, commandOptions);
+	// 	} catch (InvalidOptionException error) {
+	// 		System.out.println(error);
+	// 	}
+	// }
 
-	public String getCommandType() {
-		return this.commandType;
-	}
+	public void validateCommandOptions(String commandType, List<String> commandOptions) throws InvalidOptionException {
+		
+		if (commandOptions.isEmpty()) {
+			return;
+		}
 
-	public void setCommandType(String commandOption) {
-		this.commandOption = commandOption;
-	}
+		String commandOptionRegEx = "(-[" + String.join("", supportedOptions) + "])";
 
-	public String getCommandOption() {
-		return this.commandOption;
-	}
+		Pattern pat = Pattern.compile(commandOptionRegEx);
 
-	public void setCommandOption(String commandOption) {
-		this.commandOption = commandOption;
-	}
-	
-	public String getCommandProperties() {
-		return this.commandProperties;
-	}
-
-	public void setCommandProperties(String commandProperties) {
-		this.commandProperties = commandProperties;
+		for (String option : commandOptions) {
+			Matcher mat = pat.matcher(option);
+			if(!mat.matches()) {
+				throw new InvalidOptionException(commandType, option);
+			} 
+		}
 	}
 }

@@ -1,46 +1,45 @@
 package cmdEmulationApp.commands;
 
-import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import cmdEmulationApp.abstracts.Command;
+import cmdEmulationApp.Commands;
 import cmdEmulationApp.abstracts.AbstractCommand;
 import cmdEmulationApp.exceptions.InvalidOptionException;
-import cmdEmulationApp.utils.Validator;
 
 /**
  * Класс реализующий функционал команды "help"
  */
 public class CommandHelp extends AbstractCommand {
-	private HashMap<String, AbstractCommand> MapOfCommandObjects;
-	private final String[] HELP_COMMAND_OPTIONS_LIST = {" "};
+	private Map<Commands, Command> mapOfCommandObjects;
 
-	public CommandHelp(HashMap<String, AbstractCommand> MapOfObjects) {
-		this.MapOfCommandObjects = MapOfObjects;
+	public CommandHelp(Map<Commands, Command> mapOfCommandObjects) {
+		super.supportedOptions = Commands.HELP.supportedOptions;
+		this.mapOfCommandObjects = mapOfCommandObjects;
 	}
 
-	public void executeCommand() {
+	@Override
+	public void executeCommand(String commandType, List<String> commandOptions, List<String> commandArgs) {
 		try {
-			Validator.validateCommandOptions(
-				super.getCommandType(),
-				super.getCommandOption(),
-				HELP_COMMAND_OPTIONS_LIST
-			);
+			validateCommandOptions(commandType, commandOptions);
 
-			if (super.getCommandProperties().equals("")) {
+			if (commandArgs.isEmpty()) {
 				this.showHelpInformation();
 			} else {
-				this.MapOfCommandObjects.get(super.getCommandProperties()).showHelpInformation();
+				for (String arg : commandArgs) {
+					try {
+						mapOfCommandObjects.get(Commands.valueOf(arg.toUpperCase())).showHelpInformation();
+					} catch (NullPointerException error) {
+						System.out.printf("bash: help: no help topic match `%s'.%n", arg);
+					}
+				}
 			}
-			
-		} catch (NullPointerException error) {
-			System.out.printf("bash: help: no help topic match `%s'.%n", super.getCommandType());
 		} catch (InvalidOptionException error) {
 			System.out.println(error);
 		}
 	}
 
-	public void processCommandOption() {
-
-	}
-
+	@Override
 	public void showHelpInformation() {
 		System.out.println("GNU bash, version 5.1.16(1)-release (x86_64-pc-linux-gnu)");
 		System.out.println("These shell commands are defined internally.  Type `help' to see this list.");

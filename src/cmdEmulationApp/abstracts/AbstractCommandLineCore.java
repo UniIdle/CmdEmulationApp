@@ -1,20 +1,22 @@
 package cmdEmulationApp.abstracts;
 
-import java.util.HashMap;
-import java.util.NoSuchElementException;
-import java.util.Scanner;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import cmdEmulationApp.models.CommandDataObject;
 import cmdEmulationApp.utils.Parser;
 
 /**
  * Абстрактный класс, частично реализующий базовый функционал интерфейса CommandLine.
  */
 public abstract class AbstractCommandLineCore implements CommandLine {
-	private Scanner commandLineScanner = new Scanner(System.in);
+	private BufferedReader commandLineBufferReader = new BufferedReader(new InputStreamReader(System.in));
 	private String inputedCommand;
-	private boolean coreTrigger = true;
+	private boolean isDisabledCore = false;
 
+	@Override
 	public void launchCommandLine() {
-		while(this.coreTrigger) {
+		while(!this.isDisabledCore) {
 			showPrefix();
 			
 			try {
@@ -24,32 +26,32 @@ public abstract class AbstractCommandLineCore implements CommandLine {
 					continue;
 				}
 
-				HashMap<String, String> commandAsMap = Parser.parseInputedCommand(this.inputedCommand);
-
-				if (commandAsMap.get("commandType").toLowerCase().equals("exit")) {
-					this.stopCommandLine();
-					continue;
-				}
+				CommandDataObject commandAsMap = Parser.parseInputedCommand(this.inputedCommand);
 
 				processInputedCommand(
-					commandAsMap.get("commandType"),
-					commandAsMap.get("commandOption"),
-					commandAsMap.get("commandProperties")
+					commandAsMap.getCommandType(),
+					commandAsMap.getCommandOptions(),
+					commandAsMap.getCommandArgs()
 				);
-			} catch (NoSuchElementException error) {//Обработка исключения выбрасываемого при нажатии комбинации клавиш Ctrl + D для прерывания
+			} catch (NullPointerException error) {//Обработка исключения выбрасываемого при нажатии комбинации клавиш Ctrl + D для прерывания
 				this.stopCommandLine();
 			}
 		}
 	}
 
+	@Override
 	public void stopCommandLine() {
-		this.coreTrigger = false;
+		this.isDisabledCore = true;
 		System.out.print("\n");
-		this.commandLineScanner.close();
 	}
 
+	@Override
 	public void recieveInputedCommand() {
-		this.inputedCommand = this.commandLineScanner.nextLine().trim();
+		try {
+			this.inputedCommand = this.commandLineBufferReader.readLine().trim();
+		} catch (IOException error) {
+
+		}
 	}
 
 	/**
