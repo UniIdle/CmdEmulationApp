@@ -19,7 +19,7 @@ public class CommandDataObject {
 		return commandOptions;
 	}
 
-	public void setCommandOptions(String commandOptions) {
+	public void addCommandOptions(String commandOptions) {
 		this.commandOptions.add(commandOptions);
 	}
 
@@ -27,7 +27,7 @@ public class CommandDataObject {
 		return commandArgs;
 	}
 
-	public void setCommandArgs(String commandArgs) {
+	public void addCommandArgs(String commandArgs) {
 		this.commandArgs.add(commandArgs);
 	}
 }

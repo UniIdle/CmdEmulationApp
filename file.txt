@@ -1,18 +1,6 @@
-	1  Hello$
-	2  world$
-	3  this$
-	4  is$
-	5  file$
-	6  2$
-$
-$
-	7  Hello,World!Helloworldthisisfile2$
-	8       1	Hello$$
-	9       2	world$$
-	10       3	this$$
-	11       4	is$$
-	12       5	file$$
-	13       6	2$$
-	14  $$
-	15  $$
-	16       7	Hello,World!Helloworldthisisfile2$$
+This
+is
+test
+fileTest
+information
+fo testing

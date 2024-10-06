@@ -12,54 +12,38 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import cmdEmulationApp.Commands;
 import cmdEmulationApp.abstracts.AbstractCommand;
-import cmdEmulationApp.exceptions.InvalidOptionException;
+import cmdEmulationApp.constants.Commands;
+import cmdEmulationApp.constants.Options;
 import cmdEmulationApp.exceptions.UnvalidCommandException;
+import cmdEmulationApp.models.CommandDataObject;
 
 /**
  * Класс реализующий функционал команды "cat"
  */
 public class CommandCat extends AbstractCommand {
 	private int lineNumber;
+
 	public CommandCat() {
-		super.supportedOptions = Commands.CAT.supportedOptions;
-		this.lineNumber = 1;
+		supportedOptions = Options.getCatCommandSupportOptions();
+		this.lineNumber = 1;//Стоит ли инициализировать в конструкторе??
 	}
 
 	@Override
-	public void executeCommand(
-			String commandType,
-			List<String> commandOptions,
-			List<String> commandArgs
-		) {
+	public StringBuilder executeCommand(CommandDataObject commandContainer) {
+		StringBuilder resultOfCommand;
+		resultOfCommand = super.executeCommand(commandContainer);
 
 		try {
-			super.validateCommandOptions(commandType, commandOptions);
-			Map<String, List<String>> catCommandArgsContainer = parseCatCommandArgs(
-				commandType, commandArgs);
+			Map<String, List<String>> catCommandArgsContainer = parseCatCommandArgs(commandContainer);
 
-			processCommandArgs(catCommandArgsContainer, commandOptions);
+			resultOfCommand.append(processCommandArgs(catCommandArgsContainer, commandContainer.getCommandOptions()));
 
-		} catch (InvalidOptionException error) {
-			System.out.println(error);
 		} catch (UnvalidCommandException error) {
 			System.out.println(error);
 		}
 
-	}
-
-	@Override
-	public void showHelpInformation() {
-		System.out.println("cat: cat [-bEn] [args...] [-] [>] [args...]");
-		System.out.println("\tCat, which is short for concatenate, is one of the most commonly used commands in Linux and other Unix-like operating systems.");
-		System.out.println("\tThe cat command allows us to create single or multiple files, view file inclusions, concatenate files and redirect output in a terminal or file.");
-		System.out.println("\tIn this article, we will show you some handy uses of the cat command and examples of it in Linux.");
-		System.out.println();
-		System.out.println("\tOptions:");
-		System.out.println("\t\t-b\t\tnumbers non-empty lines");
-		System.out.println("\t\t-E\t\tadds $ sign to the end of the line");
-		System.out.println("\t\t-n\t\tnumbers all lines");
+		return resultOfCommand;
 	}
 
 	/**
@@ -68,17 +52,14 @@ public class CommandCat extends AbstractCommand {
 	 * @param commandArgs аргументы команды
 	 * @throws UnvalidCommandException исключение некорректно введеной команды
 	 */
-	private Map<String, List<String>> parseCatCommandArgs(
-			String commandType,
-			List<String> commandArgs
-		) throws UnvalidCommandException {
+	private Map<String, List<String>> parseCatCommandArgs(CommandDataObject commandContainer) throws UnvalidCommandException {//Что лучше передавать данному методу???
 			
 		if (
-			(commandArgs.stream()
+			(commandContainer.getCommandArgs().stream()
 			.filter(element -> element.equals(">"))
 			.collect(Collectors.toList()).size() > 1)
-			|| (commandArgs.isEmpty())) {
-			throw new UnvalidCommandException(commandType);
+			|| (commandContainer.getCommandArgs().isEmpty())) {
+			throw new UnvalidCommandException(commandContainer.getCommandType());
 		}
 
 			boolean isReadArgs = true;
@@ -86,7 +67,7 @@ public class CommandCat extends AbstractCommand {
 			commandArgsContainer.put("readArguments", new ArrayList<>());
 			commandArgsContainer.put("recordArguments", new ArrayList<>());
 
-			for (String argument : commandArgs) {
+			for (String argument : commandContainer.getCommandArgs()) {
 				if (argument.equals(">")) {
 					isReadArgs = false;
 					continue;
@@ -100,20 +81,20 @@ public class CommandCat extends AbstractCommand {
 			}
 
 			if (!isReadArgs && commandArgsContainer.get("recordArguments").size() != 1) {
-				throw new UnvalidCommandException(commandType);
+				throw new UnvalidCommandException(commandContainer.getCommandType());
 			}
 
 			return commandArgsContainer;
 	}
 
-	private void processCommandArgs(
+	private StringBuilder processCommandArgs(
 		Map<String, List<String>> commandArgsContainer,
 		List<String> commandOptions) {
 	
 		List<String> readArgs = commandArgsContainer.get("readArguments");
 		List<String> recordArgs = commandArgsContainer.get("recordArguments");
 		
-		StringBuilder readBuffer = new StringBuilder("");
+		StringBuilder readBuffer = new StringBuilder();
 
 		for (String filePath : readArgs) {
 			readBuffer.append(readFile(filePath, commandOptions));
@@ -123,15 +104,17 @@ public class CommandCat extends AbstractCommand {
 
 		if (!recordArgs.isEmpty()) {
 			recordFile(recordArgs.get(0), readBuffer);
-			return;
+			return new StringBuilder();
 		}
 
-		printCatCommandResult(readBuffer);
+		// readBuffer.append(formCatCommandResult());
+
+		return readBuffer;
 	}
 
-	private void printCatCommandResult(StringBuilder readBuffer) {
-		System.out.println(readBuffer);
-	}
+	// private void formCatCommandResult(StringBuilder readBuffer) {
+	// 	System.out.println(readBuffer);
+	// }
 
 	/**
 	 * Метод для обработки опции команды

@@ -10,6 +10,6 @@ public class InvalidOptionException extends Exception {
 	}
 
 	public String toString() {
-		return this.commandType + ": invalid option  '" + this.commandOption + "'";
+		return commandType + ": invalid option  '" + commandOption + "'";
 	}
 }

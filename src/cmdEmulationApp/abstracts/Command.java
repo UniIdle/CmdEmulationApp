@@ -1,7 +1,8 @@
 package cmdEmulationApp.abstracts;
 
-import java.util.List;
-import cmdEmulationApp.exceptions.ExitCommandException;
+import cmdEmulationApp.constants.Commands;
+import cmdEmulationApp.exceptions.InvalidOptionException;
+import cmdEmulationApp.models.CommandDataObject;
 
 /**
  * Интерфейс, определяющий функционал команды
@@ -11,10 +12,16 @@ public interface Command {
 	/**
 	 * Метод осуществляющий выполнение конкретной команды
 	 */
-	void executeCommand(String commandType, List<String> commandOption, List<String> commandProperties) throws ExitCommandException;
+	StringBuilder executeCommand(CommandDataObject commandContainer);
+
+	/**
+	 * Метод для валидации полученных опций
+	 * @param commandContainer объект с данными команды
+	 */
+	void validateCommandOptions(CommandDataObject commandContainer) throws InvalidOptionException;
 
 	/**
 	 * Метод показывающий подробную информацию о команде
 	 */
-	void showHelpInformation();
+	StringBuilder formHelpInformation(Commands commandInfo);
 }

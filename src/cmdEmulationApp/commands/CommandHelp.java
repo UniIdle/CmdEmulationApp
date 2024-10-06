@@ -1,54 +1,64 @@
 package cmdEmulationApp.commands;
 
-import java.util.List;
 import java.util.Map;
 import cmdEmulationApp.abstracts.Command;
-import cmdEmulationApp.Commands;
+import cmdEmulationApp.constants.Commands;
+import cmdEmulationApp.constants.Options;
 import cmdEmulationApp.abstracts.AbstractCommand;
-import cmdEmulationApp.exceptions.InvalidOptionException;
+import cmdEmulationApp.models.CommandDataObject;
 
 /**
  * Класс реализующий функционал команды "help"
  */
 public class CommandHelp extends AbstractCommand {
+	private String allInformation = "GNU bash, version 5.1.16(1)-release (x86_64-pc-linux-gnu)\nThese shell commands are defined internally.  Type `help' to see this list.\nType `help name' to find out more about the function `name'.\n\n";
 	private Map<Commands, Command> mapOfCommandObjects;
 
 	public CommandHelp(Map<Commands, Command> mapOfCommandObjects) {
-		super.supportedOptions = Commands.HELP.supportedOptions;
+		supportedOptions = Options.getHelpCommandSupportOptions();
 		this.mapOfCommandObjects = mapOfCommandObjects;
 	}
 
 	@Override
-	public void executeCommand(String commandType, List<String> commandOptions, List<String> commandArgs) {
-		try {
-			validateCommandOptions(commandType, commandOptions);
+	public StringBuilder executeCommand(CommandDataObject commandContainer) {
+		StringBuilder resultOfCommand = new StringBuilder();
+		super.executeCommand(commandContainer);
 
-			if (commandArgs.isEmpty()) {
-				this.showHelpInformation();
-			} else {
-				for (String arg : commandArgs) {
-					try {
-						mapOfCommandObjects.get(Commands.valueOf(arg.toUpperCase())).showHelpInformation();
-					} catch (NullPointerException error) {
-						System.out.printf("bash: help: no help topic match `%s'.%n", arg);
-					}
+		if (commandContainer.getCommandArgs().isEmpty()) {
+			resultOfCommand.append(formAllHelpInformation());
+		} else {
+			for (String arg : commandContainer.getCommandArgs()) {
+				try {
+					Commands commandInfo = Commands.valueOf(arg.toUpperCase());
+
+					resultOfCommand.append(mapOfCommandObjects.get(commandInfo).formHelpInformation(commandInfo));
+				} catch (NullPointerException error) {
+					System.out.printf("bash: help: no help topic match `%s'.%n", arg);
 				}
 			}
-		} catch (InvalidOptionException error) {
-			System.out.println(error);
 		}
+
+		return resultOfCommand;
+
 	}
 
-	@Override
-	public void showHelpInformation() {
-		System.out.println("GNU bash, version 5.1.16(1)-release (x86_64-pc-linux-gnu)");
-		System.out.println("These shell commands are defined internally.  Type `help' to see this list.");
-		System.out.println("Type `help name' to find out more about the function `name'.");
-		System.out.println();
-		System.out.println("All access commands:");
-		System.out.println();
-		System.out.println("ls [-aQr] [args...]");
-		System.out.println("cat [-bEn] [args...] [-] [>] [args...]");
+	private StringBuilder formAllHelpInformation() {
+		StringBuilder allInformation = new StringBuilder();
+		allInformation.append(this.allInformation);
+		allInformation.append(formAccessCommands());
+
+		return allInformation;
+	}
+
+	private StringBuilder formAccessCommands() {
+		StringBuilder accessCommand = new StringBuilder();
+		accessCommand.append("\tAll access commands:\n\n");//System.out.print("\tAll access commands:\n\n");
+		for (Commands command : Commands.values()) {
+			accessCommand.append("\t");//System.out.print("\t" + command.schema);
+			accessCommand.append(command.schema);//System.out.print("\t" + command.schema);
+		}
+
+		return accessCommand;
 	}
 
 }

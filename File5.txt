@@ -1,9 +1,0 @@
-     1	Hello$
-     2	world$
-     3	this$
-     4	is$
-     5	file$
-     6	2$
-$
-$
-     7	Hello,World!Helloworldthisisfile2$

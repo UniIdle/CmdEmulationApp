@@ -1,13 +1,13 @@
 package cmdEmulationApp.exceptions;
 
 public class UnvalidCommandException extends Exception {
-	private String command;
+	private String commandType;
 
-	public UnvalidCommandException(String command) {
-		this.command = command;
+	public UnvalidCommandException(String commandType) {
+		this.commandType = commandType;
 	}
 
 	public String toString() {
-		return command + " : unvalid format of command";
+		return commandType + " : unvalid format of command";
 	}
 }

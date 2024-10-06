@@ -1,40 +1,69 @@
 package cmdEmulationApp.abstracts;
 
-import java.util.List;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
+import java.util.Map;
 import cmdEmulationApp.exceptions.InvalidOptionException;
+import cmdEmulationApp.models.CommandDataObject;
+import cmdEmulationApp.constants.Commands;
 
 /**
  * Абстрактный класс команды, определяющий основные поля объекта команды и методы доступа к ним
  */
 public abstract class AbstractCommand implements Command {
-	public String[] supportedOptions;
+	protected Map<String, String> supportedOptions;
 
-	// @Override
-	// public void executeCommand(String commandType, ArrayList<String> commandOptions, ArrayList<String> commandArgs) {
-	// 	try {
-	// 		validateCommandOptions(commandType, commandOptions);
-	// 	} catch (InvalidOptionException error) {
-	// 		System.out.println(error);
-	// 	}
-	// }
+	@Override
+	public StringBuilder executeCommand(CommandDataObject commandContainer) {//???????
+		StringBuilder resultOfCommand = new StringBuilder();
 
-	public void validateCommandOptions(String commandType, List<String> commandOptions) throws InvalidOptionException {
+		try {
+			validateCommandOptions(commandContainer);
+		} catch (InvalidOptionException error) {
+			System.out.println(error);
+		}
+
+		return resultOfCommand;
+	}
+
+	@Override
+	public void validateCommandOptions(CommandDataObject commandContainer) throws InvalidOptionException{
 		
-		if (commandOptions.isEmpty()) {
+		if (commandContainer.getCommandOptions().isEmpty()) {
 			return;
 		}
 
-		String commandOptionRegEx = "(-[" + String.join("", supportedOptions) + "])";
+		compareInputedAndSupportedOptions(commandContainer);
+	}
 
+	@Override
+	public StringBuilder formHelpInformation(Commands commandInfo) {
+		StringBuilder helpInfo = new StringBuilder();
+		helpInfo.append(commandInfo.schema).append(commandInfo.description);
+
+		if (!supportedOptions.isEmpty()) {
+			helpInfo.append("\n").append("\tOptions:\n");
+			supportedOptions
+				.entrySet()
+				.stream()
+				.forEach(option -> helpInfo.append("\t").append(option.getKey()).append("\t").append(option.getValue()));
+		}
+
+		helpInfo.append("\n");
+
+		return helpInfo;
+	}
+
+	private void compareInputedAndSupportedOptions(CommandDataObject commandContainer) throws InvalidOptionException {
+		String commandOptionRegEx = "(-[" + String.join("", supportedOptions.keySet()) + "])";
 		Pattern pat = Pattern.compile(commandOptionRegEx);
 
-		for (String option : commandOptions) {
+		for (String option : commandContainer.getCommandOptions()) {
 			Matcher mat = pat.matcher(option);
 			if(!mat.matches()) {
-				throw new InvalidOptionException(commandType, option);
+				throw new InvalidOptionException(commandContainer.getCommandType(), option);
 			} 
 		}
 	}
+
 }

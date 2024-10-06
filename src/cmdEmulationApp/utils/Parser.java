@@ -1,9 +1,5 @@
 package cmdEmulationApp.utils;
 
-// import java.util.HashMap;
-import java.util.ArrayList;
-// import java.util.regex.Pattern;
-// import java.util.regex.Matcher;
 import cmdEmulationApp.models.CommandDataObject;
 
 /**
@@ -17,37 +13,28 @@ public class Parser {
 	 */
 	public static CommandDataObject parseInputedCommand(String inputCommand) {
 		String[] commandAsList = inputCommand.split(" +");
-		CommandDataObject commandData = new CommandDataObject();
+		CommandDataObject commandContainer = new CommandDataObject();
 
-		commandData.setCommandType(commandAsList[0]);
+		commandContainer.setCommandType(commandAsList[0].toUpperCase());
 
 		if (commandAsList.length < 2) {
-			return commandData;
+			return commandContainer;
 		}
 
+		fillOptionsAndArgsLists(commandContainer, commandAsList);//Стоит ли выносить в отдельный метод? если да, то как лучше реализовать void или return commandContainer
+
+		return commandContainer;
+	}
+
+	private static void fillOptionsAndArgsLists(CommandDataObject commandContainer, String[] commandAsList) {
 		for (int i = 1; i < commandAsList.length; i++) {
 			String element = commandAsList[i];
 			if (element.startsWith("-")) {
-				commandData.setCommandOptions(element);
+				commandContainer.addCommandOptions(element);
 			} else {
-				commandData.setCommandArgs(element);
+				commandContainer.addCommandArgs(element);
 			}
 		}
-
-		return commandData;
 	}
 
-	/**
-	 * Метод определяющий режим работы "cat" команды
-	 * @param commandProperties дополнительные свойства команды
-	 * @return булевы значения true - catinate режим, false - show режим
-	 */
-	public static boolean parseCatCommandMode(ArrayList<String> commandProperties) {
-		// Pattern pat = Pattern.compile("([^ >]+ +)*>( +[^ >]+)*");
-		// Matcher mat = pat.matcher(commandProperties);
-
-		// if (mat.matches()) return true;
-
-		return false;
-	}
 }

@@ -1,15 +1,15 @@
 package cmdEmulationApp;
 
-import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 import cmdEmulationApp.abstracts.AbstractCommandLineCore;
 import cmdEmulationApp.abstracts.Command;
 import cmdEmulationApp.commands.CommandCat;
 import cmdEmulationApp.commands.CommandLs;
+import cmdEmulationApp.constants.Commands;
 import cmdEmulationApp.commands.CommandHelp;
 import cmdEmulationApp.commands.CommandExit;
-import cmdEmulationApp.exceptions.ExitCommandException;
+import cmdEmulationApp.models.CommandDataObject;
 
 /**
  * Класс-приложение, реализующий эмулятор командной строки Linux
@@ -23,20 +23,27 @@ public class LinuxCommandLine extends AbstractCommandLineCore {
 
 	@Override
 	public void launchCommandLine() {
-		showStartInformation();
+		printStartInformation();
 		super.launchCommandLine();
 	}
 
 	@Override
-	public void processInputedCommand(String commandType, List<String> commandOption, List<String> commandProperties) {
+	public void processInputedCommand(CommandDataObject commandContainer) {
 		try {
-			Command commandObject = this.mapOfCommandObjects.get(Commands.valueOf(commandType.toUpperCase()));
-			
-			commandObject.executeCommand(commandType, commandOption, commandProperties);
+			Command objectOfCommand = this.mapOfCommandObjects.get(Commands.valueOf(commandContainer.getCommandType()));
+
+			ExecuteCommandThread flowOfExecuteCommand = new ExecuteCommandThread(objectOfCommand, commandContainer);
+			flowOfExecuteCommand.start();
+
+			try {
+				flowOfExecuteCommand.join();
+				flowOfExecuteCommand.getResultOfCommandExecution().flush();
+			} catch (Exception e) {
+				
+			}
+
 		} catch (IllegalArgumentException error) {
-			System.out.printf("%s: command not found\n", commandType);
-		} catch (ExitCommandException error) {
-			super.stopCommandLine();
+			System.out.printf("%s: command not found\n", commandContainer.getCommandType());
 		}
 	}
 
@@ -48,7 +55,7 @@ public class LinuxCommandLine extends AbstractCommandLineCore {
 		/**
 	 * Метод отображающий стартовую информацию при запуске командной строки
 	 */
-	private void showStartInformation() {
+	private void printStartInformation() {
 		System.out.println("Welcome to CmdEmulatorApp!");
 		System.out.println("To finish, enter \"exit\"");
 	}

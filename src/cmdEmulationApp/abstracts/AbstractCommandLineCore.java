@@ -3,6 +3,7 @@ package cmdEmulationApp.abstracts;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import cmdEmulationApp.constants.Commands;
 import cmdEmulationApp.models.CommandDataObject;
 import cmdEmulationApp.utils.Parser;
 
@@ -16,23 +17,21 @@ public abstract class AbstractCommandLineCore implements CommandLine {
 
 	@Override
 	public void launchCommandLine() {
-		while(!this.isDisabledCore) {
+		while(!isDisabledCore) {
 			showPrefix();
 			
 			try {
-				this.recieveInputedCommand();
+				recieveInputedCommand();
 
-				if (this.inputedCommand.equals("")) {
+				if (inputedCommand.equals("")) {
 					continue;
 				}
 
-				CommandDataObject commandAsMap = Parser.parseInputedCommand(this.inputedCommand);
+				CommandDataObject commandContainer = Parser.parseInputedCommand(inputedCommand);
 
-				processInputedCommand(
-					commandAsMap.getCommandType(),
-					commandAsMap.getCommandOptions(),
-					commandAsMap.getCommandArgs()
-				);
+				processInputedCommand(commandContainer);
+				defineExitIndication(commandContainer.getCommandType());
+
 			} catch (NullPointerException error) {//Обработка исключения выбрасываемого при нажатии комбинации клавиш Ctrl + D для прерывания
 				this.stopCommandLine();
 			}
@@ -41,14 +40,14 @@ public abstract class AbstractCommandLineCore implements CommandLine {
 
 	@Override
 	public void stopCommandLine() {
-		this.isDisabledCore = true;
+		isDisabledCore = true;
 		System.out.print("\n");
 	}
 
 	@Override
 	public void recieveInputedCommand() {
 		try {
-			this.inputedCommand = this.commandLineBufferReader.readLine().trim();
+			inputedCommand = this.commandLineBufferReader.readLine().trim();
 		} catch (IOException error) {
 
 		}
@@ -58,5 +57,11 @@ public abstract class AbstractCommandLineCore implements CommandLine {
 	 * Метод отображающий разделитель строки, ожидающей команду от пользователя
 	 */
 	public abstract void showPrefix();
+
+	private void defineExitIndication(String commandType) {
+		if (commandType.equals(Commands.EXIT.name)) {
+			stopCommandLine();
+		}
+	}
 
 }

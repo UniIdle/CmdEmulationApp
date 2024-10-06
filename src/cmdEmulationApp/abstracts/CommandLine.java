@@ -1,6 +1,6 @@
 package cmdEmulationApp.abstracts;
 
-import java.util.List;
+import cmdEmulationApp.models.CommandDataObject;
 
 /**
  * Интерфес, описывающий общее поведение командной строки.
@@ -28,5 +28,5 @@ public interface CommandLine {
 	 * @param commandOption необязательная опция расширяющая возможности команды
 	 * @param commandProperties дополнительные свойства индивидуальные для каждого типа команды
 	 */
-	void processInputedCommand(String commandType, List<String> commandOption, List<String> commandProperties);
+	void processInputedCommand(CommandDataObject commandContainer);
 }

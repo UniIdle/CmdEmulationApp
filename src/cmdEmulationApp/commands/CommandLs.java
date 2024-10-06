@@ -6,9 +6,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Arrays;
 import java.util.stream.Collectors;
-import cmdEmulationApp.exceptions.InvalidOptionException;
+import cmdEmulationApp.models.CommandDataObject;
 import cmdEmulationApp.abstracts.AbstractCommand;
-import cmdEmulationApp.Commands;
+import cmdEmulationApp.constants.Options;
 
 /**
  * Класс реализующий функционал команды "ls"
@@ -16,42 +16,29 @@ import cmdEmulationApp.Commands;
 public class CommandLs extends AbstractCommand {
 
 	public CommandLs() {
-		super.supportedOptions = Commands.LS.supportedOptions;
+		super.supportedOptions = Options.getLsCommandSupportOptions();
 	}
 
 
 	@Override
-	public void executeCommand(String commandType, List<String> commandOptions, List<String> commandArgs) {
-		try {
-			super.validateCommandOptions(commandType, commandOptions);
+	public StringBuilder executeCommand(CommandDataObject commandContainer) {
 
-			if (commandArgs.isEmpty()) {
-				commandArgs.add(System.getProperty("user.dir"));
+			super.executeCommand(commandContainer);
+
+			if (commandContainer.getCommandArgs().isEmpty()) {
+				commandContainer.getCommandArgs().add(System.getProperty("user.dir"));
 			}
 
-			processCommandArgs(commandType, commandOptions, commandArgs);
-			
-		}  catch (InvalidOptionException error) {
-			System.out.println(error);
-		}
-	}
-
-	@Override
-	public void showHelpInformation() {
-		System.out.println("ls: ls [-aQr] [args...]");
-		System.out.println("\tThe ls command lists the files in your current directory (ls is short for \"list\"). Try it now by typing ls, then hitting <enter>.");
-		System.out.println();
-		System.out.println("\tOptions:");
-		System.out.println("\t\t-a\t\tshow hidden files");
-		System.out.println("\t\t-Q\t\tputs file and directories names in quotes");
-		System.out.println("\t\t-r\t\tshow files in reverse order");
+			return processCommandArgs(commandContainer);
 	}
 
 	/**
 	 * Метод выполняющий обработку аргументов переданных из команды
 	 */
-	private void processCommandArgs(String commandType, List<String> commandOptions, List<String> commandArgs) {
-		for (String path : commandArgs) {
+	private StringBuilder processCommandArgs(CommandDataObject commandContainer) {
+		StringBuilder resultOfCommand = new StringBuilder();
+
+		for (String path : commandContainer.getCommandArgs()) {
 			try {
 				File folder = new File(path);
 				File[] files = folder.listFiles();
@@ -61,12 +48,14 @@ public class CommandLs extends AbstractCommand {
 					continue;
 				}
 
-				printResultOfExecuteCommand(commandType, commandOptions, commandArgs, files, path);
+				resultOfCommand.append(formResultOfExecuteCommand(commandContainer, files, path));
 	
 			} catch (NullPointerException error) {
-				System.out.println(commandType + ": cannot access '" + path + "': No such file or directory\n");
+				System.out.println(commandContainer.getCommandType() + ": cannot access '" + path + "': No such file or directory\n");
 			}
 		}
+
+		return resultOfCommand;
 	}
 
 	/**
@@ -77,19 +66,24 @@ public class CommandLs extends AbstractCommand {
 	 * @param currentDirectoryFiles массив файлов директории переданной в качестве аргумента
 	 * @param currentDirectoryPath путь к директории
 	 */
-	private void printResultOfExecuteCommand (
-		String commandType,
-		List<String> commandOptions,
-		List<String> commandArgs,
+	private StringBuilder formResultOfExecuteCommand(
+		CommandDataObject commandContainer,
 		File[] currentDirectoryFiles,
 		String currentDirectoryPath) {
 
-		if (commandArgs.size() > 1 && currentDirectoryFiles != null) {
-			System.out.println(currentDirectoryPath + ":");
-		} 
-				processCommandOption(commandOptions, currentDirectoryFiles).stream().forEach(element -> System.out.print(element + " "));
-				System.out.println();
-				if (commandArgs.size() > 1 && currentDirectoryFiles != null) System.out.println();
+			StringBuilder resultOfArg = new StringBuilder();
+
+			if (commandContainer.getCommandArgs().size() > 1 && currentDirectoryFiles != null) {
+				resultOfArg.append(currentDirectoryPath).append(":");//System.out.println(currentDirectoryPath + ":");
+			} 
+
+			processCommandOption(commandContainer.getCommandOptions(), currentDirectoryFiles).stream().forEach(element -> resultOfArg.append(element).append(" "));//System.out.print(element + " "));
+			resultOfArg.append("\n");//System.out.println();
+			if (commandContainer.getCommandArgs().size() > 1 && currentDirectoryFiles != null) {
+				resultOfArg.append("\n");//System.out.println();
+			} 
+
+			return resultOfArg;
 	}
 
 	/**
